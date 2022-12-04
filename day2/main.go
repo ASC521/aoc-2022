@@ -45,12 +45,18 @@ type Play struct {
 	name  string
 	value int
 	beats string
+	loses string
 }
 
+type Result = string
+
 const (
-	Loss = 0
-	Draw = 3
-	Win  = 6
+	LossValue = 0
+	DrawValue = 3
+	WinValue  = 6
+	Win       = Result("win")
+	Draw      = Result("draw")
+	Loss      = Result("loss")
 )
 
 var (
@@ -58,33 +64,61 @@ var (
 		name:  "Rock",
 		value: 1,
 		beats: "Scissors",
+		loses: "Paper",
 	}
 	paper = Play{
 		name:  "Paper",
 		value: 2,
 		beats: "Rock",
+		loses: "Scissors",
 	}
 	scissors = Play{
 		name:  "Scissors",
 		value: 3,
-		beats: "Rock",
+		beats: "Paper",
+		loses: "Rock",
+	}
+	plays = map[string]Play{
+		"Rock":     rock,
+		"Paper":    paper,
+		"Scissors": scissors,
 	}
 )
 
-func shoot(opponent, mine Play) int {
+func shootPartOne(opponent, mine Play) int {
 
 	if opponent.beats == mine.name {
-		return Loss + mine.value
+		return LossValue + mine.value
 	} else if opponent.name == mine.name {
-		return Draw + mine.value
+		return DrawValue + mine.value
 	} else if mine.beats == opponent.name {
-		return Win + mine.value
+		return WinValue + mine.value
 	}
 
 	panic("I should never get here")
 }
 
+func shootPartTwo(opponent Play, result Result) int {
+
+	switch result {
+	case Win:
+		myPlay := plays[opponent.loses]
+		return WinValue + myPlay.value
+
+	case Draw:
+		return DrawValue + opponent.value
+	case Loss:
+		myPlay := plays[opponent.beats]
+		return LossValue + myPlay.value
+	default:
+		panic("I should never get here.")
+	}
+
+}
+
 func main() {
+
+	part := 2
 
 	opponentDecryptKey := map[string]Play{
 		"A": rock,
@@ -92,13 +126,19 @@ func main() {
 		"C": scissors,
 	}
 
-	myDecryptKey := map[string]Play{
+	myDecryptKeyPartOne := map[string]Play{
 		"X": rock,
 		"Y": paper,
 		"Z": scissors,
 	}
 
-	file, err := os.Open("day2/strategy_guide.txt")
+	myDecryptKeyPartTwo := map[string]Result{
+		"X": Loss,
+		"Y": Draw,
+		"Z": Win,
+	}
+
+	file, err := os.Open("day2/input.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -111,10 +151,18 @@ func main() {
 		line := scanner.Text()
 		plays := strings.Fields(line)
 		oppPlay := opponentDecryptKey[plays[0]]
-		myPlay := myDecryptKey[plays[1]]
-		s := shoot(oppPlay, myPlay)
-		fmt.Printf("Score For Round %v: %v\n", round, s)
-		totalScore += s
+		if part == 1 {
+			myPlay := myDecryptKeyPartOne[plays[1]]
+			s := shootPartOne(oppPlay, myPlay)
+			fmt.Printf("Score For Round %v: %v\n", round, s)
+			totalScore += s
+		} else if part == 2 {
+			r := myDecryptKeyPartTwo[plays[1]]
+			s := shootPartTwo(oppPlay, r)
+			fmt.Printf("Score For Round %v: %v\n", round, s)
+			totalScore += s
+		}
+
 		round += 1
 	}
 
