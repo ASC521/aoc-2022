@@ -91,7 +91,17 @@ func parseSignleDigit(r string) map[int]bool {
 	return elf
 }
 
-func contains(one, two map[int]bool) bool {
+func containsAny(one, two map[int]bool) bool {
+	for a := range one {
+		if two[a] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func containsAll(one, two map[int]bool) bool {
 
 	for a := range one {
 		if !two[a] {
@@ -103,7 +113,9 @@ func contains(one, two map[int]bool) bool {
 
 func main() {
 
-	file, err := os.Open("day4/large_section_assignments.txt")
+	part := 2
+
+	file, err := os.Open("day4/input.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -120,9 +132,16 @@ func main() {
 			elfOne := parseSignleDigit(assignments[0])
 			elfTwo := parseSignleDigit(assignments[1])
 
-			if contains(elfOne, elfTwo) || contains(elfTwo, elfOne) {
-				fmt.Printf("Assingments fully overlap: %v\n", line)
-				fullyOverlappped += 1
+			if part == 1 {
+				if containsAll(elfOne, elfTwo) || containsAll(elfTwo, elfOne) {
+					fmt.Printf("Assingments fully overlap: %v\n", line)
+					fullyOverlappped += 1
+				}
+			} else if part == 2 {
+				if containsAny(elfOne, elfTwo) || containsAny(elfTwo, elfOne) {
+					fmt.Printf("Assingments fully overlap: %v\n", line)
+					fullyOverlappped += 1
+				}
 			}
 
 		} else if len(assignments) == 1 {
@@ -134,10 +153,19 @@ func main() {
 				assignmentTwo = line
 				elfOne := parseLargeDigit(assignmentOne)
 				elfTwo := parseLargeDigit(assignmentTwo)
-				if contains(elfOne, elfTwo) || contains(elfTwo, elfOne) {
-					fmt.Printf("Assingments fully overlap: %v    %v\n", assignmentOne, assignmentTwo)
-					fullyOverlappped += 1
+
+				if part == 1 {
+					if containsAll(elfOne, elfTwo) || containsAll(elfTwo, elfOne) {
+						fmt.Printf("Assingments fully overlap: %v    %v\n", assignmentOne, assignmentTwo)
+						fullyOverlappped += 1
+					}
+				} else if part == 2 {
+					if containsAny(elfOne, elfTwo) || containsAny(elfTwo, elfOne) {
+						fmt.Printf("Assingments fully overlap: %v\n", line)
+						fullyOverlappped += 1
+					}
 				}
+
 			} else if assignmentOne == "" && assignmentTwo == "" {
 				assignmentOne = line
 			}
