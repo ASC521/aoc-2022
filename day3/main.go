@@ -74,11 +74,33 @@ func findMisplacedSupply(one, two string) string {
 	return ""
 }
 
+func identifyBadgeGroup(one, two, three string) string {
+
+	suppliesElfOne := make(map[string]bool)
+	for _, s := range strings.Split(one, "") {
+		suppliesElfOne[s] = true
+	}
+
+	suppliesElfTwo := make(map[string]bool)
+	for _, s := range strings.Split(two, "") {
+		suppliesElfTwo[s] = true
+	}
+
+	for _, s := range strings.Split(three, "") {
+		if suppliesElfOne[s] && suppliesElfTwo[s] {
+			return s
+		}
+	}
+
+	panic("I should never get here.  It was guaranteed exactly 1 item would be duplicate in a group.")
+}
+
 func main() {
 
+	part := 2
 	priority := getPriorities()
 
-	file, err := os.Open("day3/rucksack_inventory.txt")
+	file, err := os.Open("day3/input.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -87,15 +109,40 @@ func main() {
 	rucksack := 1
 	totalP := 0
 	scanner := bufio.NewScanner(file)
+	elfOne := ""
+	elfTwo := ""
+	elfThree := ""
 	for scanner.Scan() {
-		fullInventory := scanner.Text()
-		compartmentOne := fullInventory[0 : len(fullInventory)/2]
-		compartmentTwo := fullInventory[len(fullInventory)/2:]
-		misplacedSupply := findMisplacedSupply(compartmentOne, compartmentTwo)
-		p := priority[misplacedSupply]
-		totalP += p
-		fmt.Printf("Rucksack %v: %v  %v\n", rucksack, misplacedSupply, p)
-		rucksack += 1
+		if part == 1 {
+			fullInventory := scanner.Text()
+			compartmentOne := fullInventory[0 : len(fullInventory)/2]
+			compartmentTwo := fullInventory[len(fullInventory)/2:]
+			misplacedSupply := findMisplacedSupply(compartmentOne, compartmentTwo)
+			p := priority[misplacedSupply]
+			totalP += p
+			fmt.Printf("Rucksack %v: %v  %v\n", rucksack, misplacedSupply, p)
+			rucksack += 1
+		} else if part == 2 {
+			line := scanner.Text()
+
+			if elfOne == "" {
+				elfOne = line
+				continue
+			} else if elfOne != "" && elfTwo == "" {
+				elfTwo = line
+				continue
+			} else if elfOne != "" && elfTwo != "" && elfThree == "" {
+				elfThree = line
+				s := identifyBadgeGroup(elfOne, elfTwo, elfThree)
+				totalP += priority[s]
+
+				elfOne = ""
+				elfTwo = ""
+				elfThree = ""
+			}
+
+		}
+
 	}
 	fmt.Printf("Total Priority: %v\n", totalP)
 }
