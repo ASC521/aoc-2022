@@ -55,7 +55,7 @@ https://adventofcode.com/2022/day/1
 
 func main() {
 
-	file, err := os.Open("day1/calorie_inventory.txt")
+	file, err := os.Open("day1/input.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -81,9 +81,14 @@ func main() {
 
 	}
 
-	fmt.Println(calorieCounts)
 	sort.Ints(calorieCounts)
+	fmt.Println(calorieCounts)
 	largest := calorieCounts[len(calorieCounts)-1]
-	fmt.Printf("Most Calories: %v", largest)
+	fmt.Printf("Most Calories: %v\n", largest)
+	largestThreeCalories := 0
+	for _, c := range calorieCounts[len(calorieCounts)-3:] {
+		largestThreeCalories += c
+	}
+	fmt.Printf("Largest 3 Calories: %v\n", largestThreeCalories)
 
 }
